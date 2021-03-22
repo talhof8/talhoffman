@@ -260,7 +260,7 @@ func StmAtomic(block func(*StmContext) interface{}) interface{} {
 
 
 
-#### The entire repository code can be found here - [https://github.com/talhof8/kashmir](https://github.com/talhof8/kashmir).
+#### The entire repository code can be found here: [https://github.com/talhof8/kashmir](https://github.com/talhof8/kashmir).
 
 
 ### Caveats
