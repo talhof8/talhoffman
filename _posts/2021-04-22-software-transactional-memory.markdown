@@ -41,8 +41,8 @@ It works by isolating a set of reads and writes to shared memory locations in a 
 
 However, as previously stated, it is important to understand that STM by itself doesn't necessarily mean lock-free concurrency. Some implementations are indeed lock-free, while some are not. Software Transactional Memory is merely an abstraction which frees the developer from typical locking concerns.
 
-![](https://www.researchgate.net/profile/Hans-Kestler/publication/43049227/figure/fig2/AS:267575359701012@1440806345935/Software-transactional-memory-Software-transactional-memory-circumvents-the-need-for.png)
-*Credit: [https://researchgate.net](https://www.researchgate.net/figure/Software-transactional-memory-Software-transactional-memory-circumvents-the-need-for_fig2_43049227)*
+![](https://www.researchgate.net/profile/Hans-Kestler/publication/43049227/figure/fig2/AS:267575359701012@1440806345935/Software-transactional-memory-Software-transactional-memory-circumvents-the-need-for.png)  
+> Credit: [https://researchgate.net](https://www.researchgate.net/figure/Software-transactional-memory-Software-transactional-memory-circumvents-the-need-for_fig2_43049227)*
 
 Sounds familiar?
 
@@ -258,7 +258,9 @@ func StmAtomic(block func(*StmContext) interface{}) interface{} {
 }
 ```
 
-**The entire repository code can be found here - https://github.com/talhof8/kashmir.**
+
+
+#### The entire repository code can be found here - [https://github.com/talhof8/kashmir](https://github.com/talhof8/kashmir).
 
 
 ### Caveats
