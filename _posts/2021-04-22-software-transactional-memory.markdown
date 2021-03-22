@@ -204,7 +204,8 @@ Otherwise, modifications are committed one-by-one in an atomic manner (say compa
 
 This entire process repeats itself until the transaction finally looks at a consistent memory layout and is able to commit itself successfully.  
 
-* Please note that the original TL2 specification doesn't mention anything about locking the read-set. This left me thinking: what would happen if a context switch occurs right after the commit-phase's read-set validation, but before actually updating the write-set memory? In that case, a second thread might modify variables which were already validated by the first one, causing it to have a false sense of memory consistency.  
+
+Please note that the original TL2 specification doesn't mention anything about locking the read-set. This left me thinking: what would happen if a context switch occurs right after the commit-phase's read-set validation, but before actually updating the write-set memory? In that case, a second thread might modify variables which were already validated by the first one, causing it to have a false sense of memory consistency.  
 
 Nonetheless, despite me [trying to desperately get good explanations](https://medium.com/r/?url=https%3A%2F%2Fwww.reddit.com%2Fr%2Fhaskell%2Fcomments%2Fleva71%2Fhelp_understanding_software_transactional_memory%2F) as to why this isn't really an issue  -  I could not find any. None of the official papers seemed to address this concern either.  
 
