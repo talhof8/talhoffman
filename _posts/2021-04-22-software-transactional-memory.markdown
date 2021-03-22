@@ -1,7 +1,7 @@
 ---
 title: "Software Transactional Memory: a stairway to lock-free programming heaven?"
 layout: post
-date: 2020-04-22 12:00
+date: 2021-04-22 12:00
 image: /assets/images/markdown.jpg
 headerImage: false
 tag:
