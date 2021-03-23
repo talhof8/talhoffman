@@ -194,7 +194,7 @@ func (sc *StmContext) Write(stmVariable *StmVariable, newVal interface{}) {
 
 We will implement a slightly modified version of TL2 in terms of committing transactions.
 
-When a user code is done executing and commit time is due, we try to "lock" each write log variable **and each read set variable\***.
+When user code is done executing and commit time is due, we try to "lock" each write log variable **and each read set variable\***.
 
 The next step is to atomically increment-and-fetch the global clock and making it be our transaction's write version. This would become the official version of each write-log variable in case everything goes well and our transactions commits successfully.
 
@@ -270,7 +270,7 @@ No rose without a thorn, though. STM indeed has some very noticeable downsides a
 
 Another potential issue - which is more  implementation-dependent than an overall STM issue - is livelocks. Obviously threads could still conflict, causing them to keep retrying the transaction thus none progressing. It could be avoided by using some backoff mechanism (be it a random backoff, exponential one, etc…) in-between transaction attempts. This will obviously cause a performance hit, raising the question of how important is performance in this regard?   
 
-In addition, a major concern is what to do about languages which do not have garbage collection. Unless given official implementation-level support, some STM algorithms would conceptually allow threads to free  heap-allocated variables while other threads are de-referencing them - causing segmentation faults. Have a look here for a deeper explanation.
+In addition, a major concern is what to do about languages which do not have garbage collection. Unless given official implementation-level support, some STM algorithms would conceptually allow threads to `free` heap-allocated variables while other threads are de-referencing them - causing segmentation faults. Have a look [here](https://stackoverflow.com/questions/8424684/optimistic-reads-and-locking-stm-software-transactional-memory-with-c-c) for a deeper explanation.
 
 Over and above that, in our implementation we use a form of spin-locking, meaning that long-running commit attempts might blow up CPU usage (unless preempted by the runtime/OS). This means that performance-wise our STM implementation is most performant in scenarios where transactions succeed on first attempt. Overall STM introduces quite a good performance (also depending on the implementation), albeit slightly less good than classic fine-grained locking.  
 
@@ -287,4 +287,4 @@ Although STM officially being an integral part of both Clojure and Haskell, over
 
 > If you'd like to read some reflections on that topic, please take a look at [https://dl.acm.org/doi/abs/10.1145/3359619.3359747](https://dl.acm.org/doi/abs/10.1145/3359619.3359747).
 
-**STM is often compared to Garbage Collection**. Both operate on memory in runtime. Whilst the first manages the state of memory, the latest manages references to memory. Please do keep in mind that garbage collection used to be doubted and back-slashed a lot when first introduced to the world, and has suffered significant performance costs. It has been vastly improved over the years, to say the least, and has become a major, integral part of many programming languages. The community's hope in regard to this matter is put our knowledge of garbage collection and how we have improved it, to use with transactional memory - making it much more mature, performant, and production-ready.
+**STM is often compared to Garbage Collection**. Both operate on memory in runtime. Whilst the first manages the state of memory, the latest manages references to memory. Please do keep in mind that garbage collection used to be doubted and back-slashed a lot when first introduced to the world, and has suffered significant performance costs. It has been vastly improved over the years, to say the least, and has become a major, integral part of many programming languages. The community's hope in regard to this matter is to put our knowledge of garbage collection and how we have improved it, to use with transactional memory - making it much more mature, performant, and production-ready.
