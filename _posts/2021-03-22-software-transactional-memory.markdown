@@ -148,7 +148,7 @@ Prior to each read we make sure of 3 things:
 1. That the shared version of that memory location is older or equals the global version, meaning we hold an up-to-date version of it
 1. That the relevant memory location wasn't modified beneath our feet in case a context switch occurred before our read operation (i.e, variable version pre-read == variable version post-read)
 
-If this read-set validation fails - the transaction will abort.
+If this read-set validation fails - the transaction will restart.
 
 ```golang
 type StmContext struct {
