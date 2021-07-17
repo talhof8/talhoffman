@@ -487,8 +487,8 @@ Virtio-balloon holds three virtio queues: `inflateq`, `deflateq`, and `statsq`. 
 FireCracker’s implementation operates on a best-effort basis and works so that if a given VM fails to allocate additional memory pages, it prompts an error, sleeps for 200ms, and then attempts again
 
 FC supports two of the three feature bits stated in the official virtio specification: 
-`deflate_on_oom` (aka `VIRTIO_BALLOON_F_DEFLATE_ON_OOM`) - deflates memory from the balloon when processes which are not needed for kernel’s activities go OOM instead of killing them by OOM killer 
-`stats_polling_interval_s` (aka `VIRTIO_BALLOON_F_STATS_VQ`) - specifies how often in seconds to send out statistics; disabled if set to 0.
+1. `deflate_on_oom` (aka `VIRTIO_BALLOON_F_DEFLATE_ON_OOM`) - deflates memory from the balloon when processes which are not needed for kernel’s activities go OOM instead of killing them by OOM killer 
+2. `stats_polling_interval_s` (aka `VIRTIO_BALLOON_F_STATS_VQ`) - specifies how often in seconds to send out statistics; disabled if set to 0.
 
 The third (or first) feature bit, which FC doesn’t turn on, is `VIRTIO_BALLOON_F_MUST_TELL_HOST` meant for telling the driver that the host must be told before pages from the balloon are used.
 
@@ -581,9 +581,9 @@ Another feature provided by FireCracker is CPUID feature masking. On x86 the `CP
 The MMDS is a FireCracker mutable data store which lets the guest access host-provided JSON metadata. A possible use case of this feature is a credential rotation needed inside the guest, controlled by the host.
 
 This feature is consisted of three components:
-The backend which is simply an API server endpoint allowing (pre-boot) configuration of the MMDS, and insertion & retrieval of data from it
-An in-memory data store holding JSON objects
-A minimal, custom made HTTP/TCP/IPv4 stack handling guest requests heading to the MMDS IPv4 address named “Dumbo”
+1. The backend which is simply an API server endpoint allowing (pre-boot) configuration of the MMDS, and insertion & retrieval of data from it
+2. An in-memory data store holding JSON objects
+3. A minimal, custom made HTTP/TCP/IPv4 stack handling guest requests heading to the MMDS IPv4 address named “Dumbo”
 
 Each frame coming at the virtio-net device from the guest is tested for its destination. If it’s found to be designated at the Metadata Service (and it’s turned on) then it will be forwarded to Dumbo. Afterwards it’ll get checked for a response which will be sent back to the guest given that there is enough room in the device’s ring buffer. If it is not designated at MMDS, it will be sent to the tap device instead.
 
@@ -651,10 +651,10 @@ For more info about the design of MMDS and Dumbo checkout these [design docs](ht
 ### Jailer, Seccomp, and cgrouping
 
 Additional sandboxing is added by FireCracker for even better security & performance assurances:
-Seccomp filters are applied by default to limit syscalls for the host per each of its threads (VMM, API servers, VCPUs). The default ones are the most restrictive, only allowing a minimum set of syscalls and parameters. The other options are having a custom filterset for advanced users, and having no seccomp filters at all which is highly not recommended. Take a look [here](https://github.com/firecracker-microvm/firecracker/blob/main/resources/seccomp/x86_64-unknown-linux-musl.json) for the complete list of default filters.
-A Jailer process which sets-up all require system resources: creating namespaces, calling `pivot_root()` & `chroot()`, cgrouping, `mknod()`ing special paths like `/dev/kvm` inside the jail, and more. Afterwards it drops privileges and `exec()` into the FireCracker image.
-The jailer provides support for using cgroups using the `--cgroup` flag. 
-It also supports using a dedicated netns and/or pid namespace. 
+1. Seccomp filters are applied by default to limit syscalls for the host per each of its threads (VMM, API servers, VCPUs). The default ones are the most restrictive, only allowing a minimum set of syscalls and parameters. The other options are having a custom filterset for advanced users, and having no seccomp filters at all which is highly not recommended. Take a look [here](https://github.com/firecracker-microvm/firecracker/blob/main/resources/seccomp/x86_64-unknown-linux-musl.json) for the complete list of default filters.
+2. A Jailer process which sets-up all require system resources: creating namespaces, calling `pivot_root()` & `chroot()`, cgrouping, `mknod()`ing special paths like `/dev/kvm` inside the jail, and more. Afterwards it drops privileges and `exec()` into the FireCracker image.
+3. The jailer provides support for using cgroups using the `--cgroup` flag. 
+4. It also supports using a dedicated netns and/or pid namespace. 
 
 
 And Voila. That’s it for now. 
