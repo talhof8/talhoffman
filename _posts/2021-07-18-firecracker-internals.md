@@ -321,7 +321,7 @@ pub fn start_vcpus(
 ```
 Source: [firecracker/src/vmm/src/lib.rs](https://github.com/firecracker-microvm/firecracker/blob/6b4a4b1c0490e006e02db7579831cbf14e05abae/src/vmm/src/lib.rs#L276)
 
-MMIO reads and writes trigger a VMExit which are handled, among other things, in a function named `run_emulation()` which runs the VCPU (will be discussed later on). Those VmExists are used for accessing the device’s control plane (i.e, its configuration space):
+MMIO reads and writes trigger a VMExit which are handled, among other things, in a function named `run_emulation()` which runs the VCPU (will be discussed later on). Those VmExits are used for accessing the device’s control plane (i.e, its configuration space):
 ```rust
 /// Runs the vCPU in KVM context and handles the kvm exit reason.
 ///
