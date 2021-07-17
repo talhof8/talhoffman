@@ -478,7 +478,6 @@ A virtio-balloon device works so that the balloon guest driver allocates memory 
 
 The host can remove balloon memory pages at will and hand them over to other guests. This enables the host to control and fine-tune each of its guests’ memory resources based on its own available resources, therefore enabling overcommitting.
 
-
 <p align="center">
   <img src="https://i.imgur.com/i925RhD.png" alt="Ballooning" />
 </p>
@@ -561,7 +560,7 @@ pub fn register_devices(&mut self, vm_fd: &VmFd) -> Result<()> {
     Ok(())
 }
 ```
-Source: (firecracker/src/vmm/src/device_manager/legacy.rs)[https://github.com/firecracker-microvm/firecracker/blob/a367796e66eeac42d9ce1294c0fbbca6191e9cf3/src/vmm/src/device_manager/legacy.rs#L82]
+Source: [firecracker/src/vmm/src/device_manager/legacy.rs](https://github.com/firecracker-microvm/firecracker/blob/a367796e66eeac42d9ce1294c0fbbca6191e9cf3/src/vmm/src/device_manager/legacy.rs#L82)
 
 ### VCPU threads and VCPUID
 
