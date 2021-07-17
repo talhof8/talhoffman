@@ -21,4 +21,4 @@ I learn by writing.
 
 ----------
 
-[Linkedin](https://www.linkedin.com/in/tal-hoffman/) · [Github](https://github.com/talhof8)
+[Linkedin](https://www.linkedin.com/in/tal-hoffman/) · [Github](https://github.com/talhof8) · [Email](mailto:talhof8@gmail.com)
