@@ -227,7 +227,9 @@ Virtio is a device virtualization standard written by Rusty Russell (the same ge
 
 Think of it as the difference between talking to a foreigner directly in her/his native tongue (para-virtualization) vs talking to them with the help of a translator (full virtualization).
 
-![Full Virtualization vs Para-Virtualization](https://i.imgur.com/AupOnSz.png)
+<p align="center">
+  <img src="https://i.imgur.com/AupOnSz.png" alt="Full Virtualization vs Para-Virtualization" />
+</p>
 
 The purpose of Virtio is to offer an abstraction and a unified standard for the front-end drivers (on the guest), for the backend device drivers (on the host), and for the transport layer between the two ends.
 
@@ -476,7 +478,10 @@ A virtio-balloon device works so that the balloon guest driver allocates memory 
 
 The host can remove balloon memory pages at will and hand them over to other guests. This enables the host to control and fine-tune each of its guests’ memory resources based on its own available resources, therefore enabling overcommitting.
 
-![Ballooning](https://i.imgur.com/i925RhD.png)
+
+<p align="center">
+  <img src="https://i.imgur.com/i925RhD.png" alt="Ballooning" />
+</p>
 
 Virtio-balloon holds three virtio queues: `inflateq`, `deflateq`, and `statsq`.  Inflateq is used by the guest driver to report about addresses it has supplied to the host device (hence the “balloon” is inflated), while deflateq is used for reports of memory addresses used by the guest (hence the “balloon” is deflated). Statsq is optional and can be used by the guest to send out memory statistics. 
 
@@ -562,7 +567,9 @@ Source: (firecracker/src/vmm/src/device_manager/legacy.rs)[https://github.com/fi
 
 FireCracker spawns and manages each KVM vCPU emulation in a separate POSIX thread. Each such vCPU is neither an OS thread nor a process, but rather an execution mode supported by hardware. Intel VT-x, for instance, is a technology meant for assisting with running virtualized guests natively without requiring any software emulation. Intel’s technology offers two running modes: a. VMX root mode used for the host VMM, and b. VMX non-root mode used for executing guest instructions. It is assisted by a per-guest structure named Virtual Machine Control Structure, which is responsible for saving all context information both host & guest modes need. This technology is used by KVM and thus by FireCracker to run vCPU.
 
-![FireCracker execution model](https://i.imgur.com/MUj6Aon.png)
+<p align="center">
+  <img src="https://i.imgur.com/MUj6Aon.png" alt="FireCracker execution model" />
+</p>
 
 FireCracker monitors each vCPU state, including VMExits and ioeventfd interrupts, and handles them accordingly in a state machine.
 
