@@ -1,9 +1,9 @@
 ---
-title: "FireCracker internals: a deep dive inside the technology powering AWS Lambda"
+title: "Firecracker internals: a deep dive inside the technology powering AWS Lambda"
 layout: post
 ---
 
-You are most likely familiar with AWS Lambda and Fargate — Amazon’s serverless computing engines. At its nature, serverless computing introduces quite a challenging task requiring both tight security and great performance. For exactly that matter Amazon came up with its microVM solution called **FireCracker**.
+You are most likely familiar with AWS Lambda and Fargate — Amazon’s serverless computing engines. At its nature, serverless computing introduces quite a challenging task requiring both tight security and great performance. For exactly that matter Amazon came up with its microVM solution called **Firecracker**.
 
 ## Micro what?
 
@@ -11,9 +11,9 @@ MicroVMs are merely a fancy name for minimal, lightweight Virtual Machines. They
 
 MicroVM in regard to this blog post is basically a virtualization technology which is tailor-made for container workloads.
 
-## **Back to FireCracker**
+## **Back to Firecracker**
 
-FireCracker is a VMM which utilizes Linux Kernel-based Virtual Machine (KVM). It is created by Amazon to solve their container workloads needs. It is [open source](https://github.com/firecracker-microvm/firecracker), written in (the incredibly awesome) Rust, and used in production since 2018.
+Firecracker is a VMM which utilizes Linux Kernel-based Virtual Machine (KVM). It is created by Amazon to solve their container workloads needs. It is [open source](https://github.com/firecracker-microvm/firecracker), written in (the incredibly awesome) Rust, and used in production since 2018.
 
 Up until recently, Lambda was being run on top of regular Linux containers isolated inside separate virtual machines. Each container served a different Lambda function while each VM served a different tenant. Although highly effective in terms of security, this set-up meant limited performance and has proven to be hard to pack variable-size workloads onto fixed-size VMs.
 
@@ -30,13 +30,13 @@ And so, it was successfully able to do so achieving impressing boot-times of “
 
 ## Going deeper…
 
-Each FireCracker process is bound to a single MicroVM and is composed of the following threads: an API Server, a VMM, and vCPU(s) threads — one per each guest CPU core.
+Each Firecracker process is bound to a single MicroVM and is composed of the following threads: an API Server, a VMM, and vCPU(s) threads — one per each guest CPU core.
 
-FireCracker currently supports `x86_64` and `aarch64` architectures running kernel version 4.14 or later. Support for aarch64 is not feature complete yet and is considered an alpha stage release. All architecture-specific information in this post regards to the `x86_64` implementation.
+Firecracker currently supports `x86_64` and `aarch64` architectures running kernel version 4.14 or later. Support for aarch64 is not feature complete yet and is considered an alpha stage release. All architecture-specific information in this post regards to the `x86_64` implementation.
 
 ### API Server
 
-The API Server is the control plane of each FireCracker process. It is, per the [official docs](https://github.com/firecracker-microvm/firecracker/blob/main/docs/design.md), “never in the fast path of the virtual machine”, and can be turned-off by passing the `no-api` flag given that a `config-file` is provided instead.
+The API Server is the control plane of each Firecracker process. It is, per the [official docs](https://github.com/firecracker-microvm/firecracker/blob/main/docs/design.md), “never in the fast path of the virtual machine”, and can be turned-off by passing the `no-api` flag given that a `config-file` is provided instead.
 
 It is started by an `ApiServerAdapter` in a dedicated thread and exposes a REST API running on top of a unix socket. Endpoints exist for configuring guest kernel, boot arguments, net configuration, block device configuration, guest machine configuration and `cpuid`, logging, metrics, rate limiting, and the metadata service. Operations can be sent to the API server pre-boot and post-boot.
 
@@ -120,7 +120,7 @@ Afterwards, it starts looking for a bootable device (CD drive, HDD, NIC) —�
 
 Boot loader systems come in various forms. Different boot loaders implement a different number of stages, designed for dealing with various resource limitations, like the first-stage boot loader’s 512 bytes size limit. Grub, for instance, is a 3-layer boot loader.
 
-However, the Linux Kernel does not necessarily require loading with a BIOS and a boot loader. Instead FireCracker takes advantage of the 64-bit Linux Boot Protocol, which specifies how the kernel image should be loaded and run. FC directly boots the Kernel at the `protected-mode` entry point rather than starting off from the 16-bit `real mode`.
+However, the Linux Kernel does not necessarily require loading with a BIOS and a boot loader. Instead Firecracker takes advantage of the 64-bit Linux Boot Protocol, which specifies how the kernel image should be loaded and run. FC directly boots the Kernel at the `protected-mode` entry point rather than starting off from the 16-bit `real mode`.
 
 As the official docs of the [Linux Boot Protocol](https://www.kernel.org/doc/Documentation/x86/boot.txt) state, the entry for the protected-mode is located at `0x100000`, as seen in the following schema:
 
@@ -156,7 +156,7 @@ permits.
 
 ```
 
-Hence, FireCracker [sets](https://github.com/firecracker-microvm/firecracker/blob/a367796e66eeac42d9ce1294c0fbbca6191e9cf3/src/arch/src/x86_64/layout.rs#L19) `HIMEM_START` to `0x0010_0000` and ultimately passes it as the `start_address` when calling `load_kernel()`. `load_kernel()` in turn runs sanity checks against the provided image, reads in its segments, and finally returns the guest memory’s entry point.
+Hence, Firecracker [sets](https://github.com/firecracker-microvm/firecracker/blob/a367796e66eeac42d9ce1294c0fbbca6191e9cf3/src/arch/src/x86_64/layout.rs#L19) `HIMEM_START` to `0x0010_0000` and ultimately passes it as the `start_address` when calling `load_kernel()`. `load_kernel()` in turn runs sanity checks against the provided image, reads in its segments, and finally returns the guest memory’s entry point.
 
 ```rust
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
@@ -219,11 +219,11 @@ where
 
 Source: [firecracker/src/kernel/src/loader/mod.rs](https://github.com/firecracker-microvm/firecracker/blob/1f697a61e1fde68e1abb2e2ef75f7bf9acbc3440/src/kernel/src/loader/mod.rs#L78)
 
-FireCracker directly uses the uncompressed kernel image `vmlinux`, saving additional costs of going through the traditional boot sequence in which the kernel decompresses itself at startup. All of this special FC boot sequence described above enables a major performance boost ultimately resulting in what AWS Lambda customer experience as fast cold starts.
+Firecracker directly uses the uncompressed kernel image `vmlinux`, saving additional costs of going through the traditional boot sequence in which the kernel decompresses itself at startup. All of this special FC boot sequence described above enables a major performance boost ultimately resulting in what AWS Lambda customer experience as fast cold starts.
 
 ### Device model & VirtIO
 
-Virtio is a device virtualization standard written by Rusty Russell (the same genius who wrote `iptables`!) as part of his work on the x86 Linux para-virtualization hypervisor `lguest`. As opposed to full virtualization - where the guest is agnostic to the fact that it’s being run on a different host - para-virtualization technology requires the guest to implement drivers on its own and cooperate with its host. This ultimately helps gaining better performance since the guest speaks directly to the host, instead of being mediated by traps & hardware emulation drivers. Obviously, this requires modifications in the guest OS in order for it to work. FireCracker is implemented using a para-virtualized KVM meaning better performance over a normal VM.
+Virtio is a device virtualization standard written by Rusty Russell (the same genius who wrote `iptables`!) as part of his work on the x86 Linux para-virtualization hypervisor `lguest`. As opposed to full virtualization - where the guest is agnostic to the fact that it’s being run on a different host - para-virtualization technology requires the guest to implement drivers on its own and cooperate with its host. This ultimately helps gaining better performance since the guest speaks directly to the host, instead of being mediated by traps & hardware emulation drivers. Obviously, this requires modifications in the guest OS in order for it to work. Firecracker is implemented using a para-virtualized KVM meaning better performance over a normal VM.
 
 Think of it as the difference between talking to a foreigner directly in her/his native tongue (para-virtualization) vs talking to them with the help of a translator (full virtualization).
 
@@ -245,7 +245,7 @@ Notifications between the two ends are used in order to notify the other end of:
 
 A good case for the better performance para-virtualization provides over full virtualization is Virtio’s ‘available buffer’ notifications mechanism which saves us a lot of costly VMExits. For instance, given NIC emulation on a full virtualization solution, there will be a VMExit for each byte being written to the emulated device. With virtio, the entire buffer will be written first and only then will a single VMExit be dispatched for the purpose of notifying the host of an available buffer.
 
-Note that there’s an even better virtio backend implementation called vhost, which introduces in-kernel virtio devices for KVM featuring direct guest-kernel-to-host-kernel data plane, saving redundant host userspace to kernel space syscalls. FireCracker does not currently use this implementation. 
+Note that there’s an even better virtio backend implementation called vhost, which introduces in-kernel virtio devices for KVM featuring direct guest-kernel-to-host-kernel data plane, saving redundant host userspace to kernel space syscalls. Firecracker does not currently use this implementation. 
 
 Virtio specifies 3 possible transport layers offering slightly different layouts & implementations of those drivers & devices:
 
@@ -257,7 +257,7 @@ One difference between PCI based transport and a MMIO one is that unlike PCI, MM
 
 Generally, notifications from the guest to the host are just writes to a special register, which trigger a signal caught by the hypervisor (`ioeventfd` & VMExits), whilst notifications from the host to the guest are basic `irqfd` interruptions. Both ‘used buffer’ notifications & ‘available buffer’ notifications are suppressible since they can generally be very expensive operations. 
 
-Back to FireCracker - each attached device (net, block, etc…) is being registered with its own MMIO transport instance, which is basically a struct implementing the [MMIO](http://docs.oasis-open.org/virtio/virtio/v1.0/cs04/virtio-v1.0-cs04.html#x1-1090002) specification + a `BusDevice` trait responding to reads or writes in an arbitrary address space.
+Back to Firecracker - each attached device (net, block, etc…) is being registered with its own MMIO transport instance, which is basically a struct implementing the [MMIO](http://docs.oasis-open.org/virtio/virtio/v1.0/cs04/virtio-v1.0-cs04.html#x1-1090002) specification + a `BusDevice` trait responding to reads or writes in an arbitrary address space.
 
 When attaching a device, FC subscribes it to the general event loop. Each device is implementing a `MutEventSubscriber` trait which implements event handling for the device's `queue_evts` (that is, 'available buffer' notifications). Those queue events hold the index of the relevant `virtqueue` buffer, so for a balloon driver for example those could be `inflateq`, `deflateq`, and `statsq` queues.
 
@@ -428,11 +428,11 @@ An alternative approach would be using virtio-console which provides such host/g
 
 On the other end, Vsock offers regular unix domain sockets API (connect(), bind(), accept(), read(), write(), etc...) and therefore supports both datagram and stream semantics. There’s a dedicated address family called `AF_VSOCK` for that purpose. Source and destination addresses are made of tuples of 32-bit context ids (cid’s) and 32-bit ports in a host byte order.
 
-FireCracker supports host-initiated vsock connections where the MicroVM must be started with a configured vsock driver. It also supports guest-initiated connections requiring the host to be listening on a destination port, sending a `VIRTIO_VSOCK_OP_RST` message to the guest otherwise.
+Firecracker supports host-initiated vsock connections where the MicroVM must be started with a configured vsock driver. It also supports guest-initiated connections requiring the host to be listening on a destination port, sending a `VIRTIO_VSOCK_OP_RST` message to the guest otherwise.
 
 ### Storage
 
-For storage FireCracker implements virtio-block devices backed by files on the host. It does not use a filesystem passthrough solution (virtio-fs) for the time being (perhaps due to security concerns?). Note that since there’s no hot-plug in FC, all of the VM’s block devices need to be attached prior to running the VM. In addition, in order to successfully mount such devices to the VM they should all be pre-formatted with a filesystem that the guest kernel supports.
+For storage Firecracker implements virtio-block devices backed by files on the host. It does not use a filesystem passthrough solution (virtio-fs) for the time being (perhaps due to security concerns?). Note that since there’s no hot-plug in FC, all of the VM’s block devices need to be attached prior to running the VM. In addition, in order to successfully mount such devices to the VM they should all be pre-formatted with a filesystem that the guest kernel supports.
 
 All read and write operations are served using a single `requestq` virtio queue. Out of the official supported operations by the virtio specification:
 ```c
@@ -443,7 +443,7 @@ All read and write operations are served using a single `requestq` virtio queue.
 #define VIRTIO_BLK_T_WRITE_ZEROES 13
 ```
 
-FireCracker only supports IN, OUT, and FLUSH:
+Firecracker only supports IN, OUT, and FLUSH:
 ```rust
 pub enum RequestType {
     In,
@@ -469,7 +469,7 @@ curl --unix-socket /tmp/firecracker.socket -i \
    }"
 ```
 
-An example for how to create a minimal rootfs image can be found at FireCracker’s [official docs](https://github.com/firecracker-microvm/firecracker/blob/7edec888f8a4e496dffa55b75fab30836a122fad/docs/rootfs-and-kernel-setup.md#creating-a-rootfs-image). 
+An example for how to create a minimal rootfs image can be found at Firecracker’s [official docs](https://github.com/firecracker-microvm/firecracker/blob/7edec888f8a4e496dffa55b75fab30836a122fad/docs/rootfs-and-kernel-setup.md#creating-a-rootfs-image). 
 
 ### Ballooning
 Ballooning is a concept which is meant to provide a solution for overcommitting memory. It allows for host-controlled, on-demand allocation and reclaiming of guest memory. 
@@ -484,7 +484,7 @@ The host can remove balloon memory pages at will and hand them over to other gue
 
 Virtio-balloon holds three virtio queues: `inflateq`, `deflateq`, and `statsq`.  Inflateq is used by the guest driver to report about addresses it has supplied to the host device (hence the “balloon” is inflated), while deflateq is used for reports of memory addresses used by the guest (hence the “balloon” is deflated). Statsq is optional and can be used by the guest to send out memory statistics. 
 
-FireCracker’s implementation operates on a best-effort basis and works so that if a given VM fails to allocate additional memory pages, it prompts an error, sleeps for 200ms, and then attempts again
+Firecracker’s implementation operates on a best-effort basis and works so that if a given VM fails to allocate additional memory pages, it prompts an error, sleeps for 200ms, and then attempts again.
 
 FC supports two of the three feature bits stated in the official virtio specification: 
 1. `deflate_on_oom` (aka `VIRTIO_BALLOON_F_DEFLATE_ON_OOM`) - deflates memory from the balloon when processes which are not needed for kernel’s activities go OOM instead of killing them by OOM killer 
@@ -494,13 +494,13 @@ The third (or first) feature bit, which FC doesn’t turn on, is `VIRTIO_BALLOON
 
 Please note that the host must be monitored for any memory pressure on its own end and then operate the balloon accordingly. This is not a practical thing to do manually and should be dealt with automatically yet carefully.   
 
-There a few security concerns and pitfalls requiring extra caring as documented in FC’s [FireCracker Ballooning documentation](https://github.com/firecracker-microvm/firecracker/blob/7edec888f8a4e496dffa55b75fab30836a122fad/docs/ballooning.md).
+There a few security concerns and pitfalls requiring extra caring as documented in FC’s [Firecracker Ballooning documentation](https://github.com/firecracker-microvm/firecracker/blob/7edec888f8a4e496dffa55b75fab30836a122fad/docs/ballooning.md).
 
 If you’re interested in the implementation of the guest balloon driver, which is pretty straight-forward, take a look [here](https://github.com/torvalds/linux/blob/master/drivers/virtio/virtio_balloon.c) and [here](https://github.com/torvalds/linux/blob/a48b0872e69428d3d02994dcfad3519f01def7fa/mm/balloon_compaction.c).
 
 ### IO Throttling
 
-FireCracker provides I/O rate limiting for its virtio-net and virtio-block devices, allowing for both bandwidth (bytes/sec) and operations per second throttling. The implementation is based on token buckets, one per each rate-limiter type.
+Firecracker provides I/O rate limiting for its virtio-net and virtio-block devices, allowing for both bandwidth (bytes/sec) and operations per second throttling. The implementation is based on token buckets, one per each rate-limiter type.
 
 It is configurable via the api server and can be (optionally) configured per drive and per network interface. The configurable values are the refill time, the bucket size, and an optional one-time burst. 
 
@@ -508,7 +508,7 @@ See: [src/api_server/swagger/firecracker.yaml#L1086](https://github.com/firecrac
 
 ### Legacy devices
 
-As already mentioned, FireCracker emulates a few legacy devices on top of a PIO bus. For one, FireCracker emulates serial COM ports commonly seen on x86 as I/O ports `0x3f8`/`0x2f8`/`0x3e8`/`0x2e8`. More specifically it uses port `0x3f8` while `0x2f8`, `0x3e8`, and `0x2e8` are used as sinks connected nowhere. In addition, it also exposes an I8052 keyboard controller registered at port `0x060` and used by FC to control shutdowns and issue ctrl+alt+delete sequences used for that purpose.
+As already mentioned, Firecracker emulates a few legacy devices on top of a PIO bus. For one, Firecracker emulates serial COM ports commonly seen on x86 as I/O ports `0x3f8`/`0x2f8`/`0x3e8`/`0x2e8`. More specifically it uses port `0x3f8` while `0x2f8`, `0x3e8`, and `0x2e8` are used as sinks connected nowhere. In addition, it also exposes an I8052 keyboard controller registered at port `0x060` and used by FC to control shutdowns and issue ctrl+alt+delete sequences used for that purpose.
 
 
 ```rust
@@ -564,21 +564,21 @@ Source: [firecracker/src/vmm/src/device_manager/legacy.rs](https://github.com/fi
 
 ### VCPU threads and VCPUID
 
-FireCracker spawns and manages each KVM vCPU emulation in a separate POSIX thread. Each such vCPU is neither an OS thread nor a process, but rather an execution mode supported by hardware. Intel VT-x, for instance, is a technology meant for assisting with running virtualized guests natively without requiring any software emulation. Intel’s technology offers two running modes: a. VMX root mode used for the host VMM, and b. VMX non-root mode used for executing guest instructions. It is assisted by a per-guest structure named Virtual Machine Control Structure, which is responsible for saving all context information both host & guest modes need. This technology is used by KVM and thus by FireCracker to run vCPU.
+Firecracker spawns and manages each KVM vCPU emulation in a separate POSIX thread. Each such vCPU is neither an OS thread nor a process, but rather an execution mode supported by hardware. Intel VT-x, for instance, is a technology meant for assisting with running virtualized guests natively without requiring any software emulation. Intel’s technology offers two running modes: a. VMX root mode used for the host VMM, and b. VMX non-root mode used for executing guest instructions. It is assisted by a per-guest structure named Virtual Machine Control Structure, which is responsible for saving all context information both host & guest modes need. This technology is used by KVM and thus by Firecracker to run vCPU.
 
 <p align="center">
-  <img src="https://i.imgur.com/MUj6Aon.png" alt="FireCracker execution model" />
+  <img src="https://i.imgur.com/MUj6Aon.png" alt="Firecracker execution model" />
 </p>
 
-FireCracker monitors each vCPU state, including VMExits and ioeventfd interrupts, and handles them accordingly in a state machine.
+Firecracker monitors each vCPU state, including VMExits and ioeventfd interrupts, and handles them accordingly in a state machine.
 
 Have a look here: [https://github.com/firecracker-microvm/firecracker/blob/HEAD/src/vmm/src/vstate/vcpu/mod.rs](https://github.com/firecracker-microvm/firecracker/blob/HEAD/src/vmm/src/vstate/vcpu/mod.rs).
 
-Another feature provided by FireCracker is CPUID feature masking. On x86 the `CPUID` instruction lets you query the processor for its capabilities, a much needed capability for some workloads. When running inside a VM this instruction won’t work well and requires emulation. KVM supports emulating `CPUID` using the `KVM_SET_CPUID2` ioctl which FC leverages. 
+Another feature provided by Firecracker is CPUID feature masking. On x86 the `CPUID` instruction lets you query the processor for its capabilities, a much needed capability for some workloads. When running inside a VM this instruction won’t work well and requires emulation. KVM supports emulating `CPUID` using the `KVM_SET_CPUID2` ioctl which FC leverages. 
 
 ### MicroVM Metadata Service (MMDS)
 
-The MMDS is a FireCracker mutable data store which lets the guest access host-provided JSON metadata. A possible use case of this feature is a credential rotation needed inside the guest, controlled by the host.
+The MMDS is a Firecracker mutable data store which lets the guest access host-provided JSON metadata. A possible use case of this feature is a credential rotation needed inside the guest, controlled by the host.
 
 This feature is consisted of three components:
 1. The backend which is simply an API server endpoint allowing (pre-boot) configuration of the MMDS, and insertion & retrieval of data from it
@@ -650,9 +650,9 @@ For more info about the design of MMDS and Dumbo checkout these [design docs](ht
 
 ### Jailer, Seccomp, and cgrouping
 
-Additional sandboxing is added by FireCracker for even better security & performance assurances:
+Additional sandboxing is added by Firecracker for even better security & performance assurances:
 1. Seccomp filters are applied by default to limit syscalls for the host per each of its threads (VMM, API servers, VCPUs). The default ones are the most restrictive, only allowing a minimum set of syscalls and parameters. The other options are having a custom filterset for advanced users, and having no seccomp filters at all which is highly not recommended. Take a look [here](https://github.com/firecracker-microvm/firecracker/blob/main/resources/seccomp/x86_64-unknown-linux-musl.json) for the complete list of default filters.
-2. A Jailer process which sets-up all require system resources: creating namespaces, calling `pivot_root()` & `chroot()`, cgrouping, `mknod()`ing special paths like `/dev/kvm` inside the jail, and more. Afterwards it drops privileges and `exec()` into the FireCracker image.
+2. A Jailer process which sets-up all required system resources: creating namespaces, calling `pivot_root()` & `chroot()`, cgrouping, `mknod()`ing special paths like `/dev/kvm` inside the jail, and more. Afterwards it drops privileges and `exec()`'s into the Firecracker image.
 3. The jailer provides support for using cgroups using the `--cgroup` flag. 
 4. It also supports using a dedicated netns and/or pid namespace. 
 
