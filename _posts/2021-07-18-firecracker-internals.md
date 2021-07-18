@@ -38,7 +38,7 @@ FireCracker currently supports `x86_64` and `aarch64` architectures running kern
 
 The API Server is the control plane of each FireCracker process. It is, per the [official docs](https://github.com/firecracker-microvm/firecracker/blob/main/docs/design.md), “never in the fast path of the virtual machine”, and can be turned-off by passing the `no-api` flag given that a `config-file` is provided instead.
 
-It is started by an `ApiServerAdapter` in a dedicated thread and exposes a REST API running on top of a unix socket. Endpoints exist for configuring guest kernel, boot arguments, net configuration, block device configuration, guest machine configuration and `cpuid`, logging, metrics, rate limiting, and the metadata service. Operations can be sent to the API server pre-boot and post-boost.
+It is started by an `ApiServerAdapter` in a dedicated thread and exposes a REST API running on top of a unix socket. Endpoints exist for configuring guest kernel, boot arguments, net configuration, block device configuration, guest machine configuration and `cpuid`, logging, metrics, rate limiting, and the metadata service. Operations can be sent to the API server pre-boot and post-boot.
 
 The communication between the API server thread and the VMM thread (discussed later) which runs & controls the actual VM is done using Rust channels.
 
