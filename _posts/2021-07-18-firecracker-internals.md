@@ -235,7 +235,7 @@ The purpose of Virtio is to offer an abstraction and a unified standard for the 
 
 The [specification](https://docs.oasis-open.org/virtio/virtio/v1.1/csprd01/virtio-v1.1-csprd01.html) lays out the requirements needed for implementing virtio-compatible systems. Front-end drivers are shipped out-of-the-box with Linux >= 2.6.25, while the backend drivers (hereinafter referred to as “devices”) must be implemented as per the docs.
 
-Interaction between the guest and the host for the purpose of the accessing the data plane is based on a ring-buffer struct called `virtqueue` containing guest-allocated buffers. The host reads and writes to those guest memory regions. Each device can have more than one virtqueues, whereas each buffer can be either a read-only or a write-only - but not both. Each device holds a status field, feature bits, and configuration space in addition to the actual data written & read by that specific device.
+Interaction between the guest and the host for the purpose of accessing the data plane is based on a ring-buffer struct called `virtqueue` containing guest-allocated buffers. The host reads and writes to those guest memory regions. Each device can have more than one virtqueues, whereas each buffer can be either a read-only or a write-only - but not both. Each device holds a status field, feature bits, and configuration space in addition to the actual data written & read by that specific device.
 
 Notifications between the two ends are used in order to notify the other end of:
 
