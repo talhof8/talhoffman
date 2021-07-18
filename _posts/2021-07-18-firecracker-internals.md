@@ -70,7 +70,7 @@ thread::Builder::new()
 
 Source: [firecracker/src/firecracker/src/api_server_adapter.rs](https://github.com/firecracker-microvm/firecracker/blob/1f697a61e1fde68e1abb2e2ef75f7bf9acbc3440/src/firecracker/src/api_server_adapter.rs#L119)
 
-Once the API server is spawned, the `ApiServerAdapater` would go on and call `build_microvm_from_requests()` which loops using successive API calls, in order to pre-boot the VM:
+Once the API server is spawned, the `ApiServerAdapter` would go on and call `build_microvm_from_requests()` which loops using successive API calls, in order to pre-boot the VM:
 
 ```rust
  pub fn build_microvm_from_requests<F, G>(
@@ -112,7 +112,7 @@ After successfully pre-booting the VM the `ApiServerAdapter` would run it callin
 
 ### Boot Sequence and Linux Boot Protocol
 
-A traditional PC boot sequence with a BIOS is compound of the following steps:
+A traditional PC boot sequence with a BIOS is consisted of the following steps:
 
 Upon starting, the CPU  —  running in real mode  —  executes an instruction located at the hardware reset vector which jumps to a ROM location. That firmware code in turn loads the start-up program — BIOS in that case. The startup program executes a POST (power-on self test) integrity check to make sure that all hardware devices that it relies on are working properly.
 
